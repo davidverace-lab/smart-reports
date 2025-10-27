@@ -73,7 +73,7 @@ class HutchisonSidebar(ctk.CTkFrame):
         subtitle_label = ctk.CTkLabel(
             logo_frame,
             text='Smart Reports',
-            font=get_font('body', 12, 'regular'),
+            font=get_font('body', 12, 'normal'),
             text_color=self.theme['sidebar_text_secondary'],
             justify='left',
             anchor='w'
@@ -102,7 +102,7 @@ class HutchisonSidebar(ctk.CTkFrame):
                 btn = ctk.CTkButton(
                     self,
                     text=f'{icon}  {text}',
-                    font=get_font('body', 14, 'regular'),
+                    font=get_font('body', 14, 'normal'),
                     fg_color='transparent',
                     text_color=self.theme['sidebar_text_secondary'],
                     hover_color=self.theme['sidebar_hover'],
@@ -150,7 +150,7 @@ class HutchisonSidebar(ctk.CTkFrame):
         copyright_label = ctk.CTkLabel(
             footer,
             text='© 2025 Hutchison Ports',
-            font=get_font('body', 9, 'regular'),
+            font=get_font('body', 9, 'normal'),
             text_color=self.theme['sidebar_text_secondary']
         )
         copyright_label.pack(anchor='w')
@@ -159,7 +159,7 @@ class HutchisonSidebar(ctk.CTkFrame):
         brand_label = ctk.CTkLabel(
             footer,
             text='Instituto HP',
-            font=get_font('body', 9, 'regular'),
+            font=get_font('body', 9, 'normal'),
             text_color=self.theme['sidebar_text_secondary']
         )
         brand_label.pack(anchor='w')

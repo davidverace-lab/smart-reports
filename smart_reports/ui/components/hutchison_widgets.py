@@ -277,13 +277,13 @@ class HutchisonLabel(ctk.CTkLabel):
             font_tuple = get_font('heading', 20, 'bold')
             text_color = self.theme['text']
         elif label_type == 'body':
-            font_tuple = get_font('body', 14, 'regular')
+            font_tuple = get_font('body', 14, 'normal')
             text_color = self.theme['text']
         elif label_type == 'caption':
-            font_tuple = get_font('body', 10, 'regular')
+            font_tuple = get_font('body', 10, 'normal')
             text_color = self.theme['text_secondary']
         else:
-            font_tuple = get_font('body', 14, 'regular')
+            font_tuple = get_font('body', 14, 'normal')
             text_color = self.theme['text']
 
         super().__init__(
@@ -338,7 +338,7 @@ class LogoFrame(ctk.CTkFrame):
             label_type='caption'
         )
         subtitle.configure(
-            font=get_font('body', 11, 'regular'),
+            font=get_font('body', 11, 'normal'),
             text_color=self.theme['text_secondary']
         )
         subtitle.pack(anchor='w', pady=(2, 0))

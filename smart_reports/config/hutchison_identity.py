@@ -128,14 +128,14 @@ def get_color(color_name):
     """
     return HUTCHISON_COLORS.get(color_name, HUTCHISON_COLORS['ports_sea_blue'])
 
-def get_font(font_type, size=None, weight='regular'):
+def get_font(font_type, size=None, weight='normal'):
     """
     Obtiene una tupla de fuente corporativa.
 
     Args:
         font_type (str): 'heading' o 'body'
         size (int, optional): Tamaño en puntos
-        weight (str, optional): 'regular' o 'bold'
+        weight (str, optional): 'normal', 'bold', 'italic', o 'bold italic'
 
     Returns:
         tuple: (family, size, weight) para CustomTkinter
@@ -147,6 +147,10 @@ def get_font(font_type, size=None, weight='regular'):
 
     if size is None:
         size = FONT_SIZES['body']
+
+    # Convertir 'regular' a 'normal' si se pasa (Tkinter usa 'normal')
+    if weight == 'regular':
+        weight = 'normal'
 
     return (family, size, weight)
 
