@@ -226,7 +226,17 @@ class MainWindow:
         # Configurar drag & drop si está disponible
         if DRAG_DROP_AVAILABLE:
             try:
+                # Para CustomTkinter, necesitamos acceder al frame interno de Tkinter
+                # El drop zone debe ser el frame interno, no el CTkFrame
+                drop_zone_internal = drop_zone.winfo_children()[0] if drop_zone.winfo_children() else drop_zone
+
                 # Configurar drop en el frame
+                drop_zone_internal.drop_target_register(DND_FILES)
+                drop_zone_internal.dnd_bind('<<Drop>>', self._on_file_drop)
+                drop_zone_internal.dnd_bind('<<DragEnter>>', lambda e: drop_zone.configure(border_color='#51cf66'))
+                drop_zone_internal.dnd_bind('<<DragLeave>>', lambda e: drop_zone.configure(border_color='#6c63ff'))
+
+                # También configurar en el frame principal
                 drop_zone.drop_target_register(DND_FILES)
                 drop_zone.dnd_bind('<<Drop>>', self._on_file_drop)
                 drop_zone.dnd_bind('<<DragEnter>>', lambda e: drop_zone.configure(border_color='#51cf66'))
