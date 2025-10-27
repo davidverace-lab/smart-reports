@@ -53,7 +53,7 @@ class HutchisonConfigCard(ctk.CTkFrame):
         icon_label = ctk.CTkLabel(
             main_container,
             text=icon,
-            font=get_font('heading', 52, 'regular'),
+            font=get_font('heading', 52, 'normal'),
             text_color=self.button_color,
             anchor='center'
         )
@@ -81,7 +81,7 @@ class HutchisonConfigCard(ctk.CTkFrame):
                 label_type='body'
             )
             desc_label.configure(
-                font=get_font('body', 12, 'regular'),
+                font=get_font('body', 12, 'normal'),
                 text_color=self.theme['text_secondary'],
                 anchor='center',
                 justify='center',
