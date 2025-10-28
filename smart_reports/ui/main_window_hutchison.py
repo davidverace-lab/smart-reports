@@ -52,16 +52,18 @@ class MainWindow:
         self.current_file = None
         self.changes_log = []
         self.current_panel = None
-        self.processor = TranscriptProcessor()
 
         # Conexión a base de datos (opcional)
         self.db = DatabaseConnection()
         self.conn = None
         self.cursor = None
+        self.processor = None  # Se inicializará si hay conexión a BD
 
         try:
             self.conn = self.db.connect()
             self.cursor = self.db.get_cursor()
+            # Inicializar processor solo si hay conexión
+            self.processor = TranscriptProcessor(self.conn)
             print("✓ Conectado a la base de datos")
         except Exception as e:
             print(f"⚠️ No hay conexión a BD: {e}")
@@ -643,6 +645,10 @@ Columnas: {len(df.columns)}
         """Procesar datos del archivo"""
         if not self.conn:
             messagebox.showerror("Error", "Requiere conexión a base de datos")
+            return
+
+        if not self.processor:
+            messagebox.showerror("Error", "Procesador no disponible sin conexión a BD")
             return
 
         try:
