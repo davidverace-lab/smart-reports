@@ -5,12 +5,12 @@ Sidebar con identidad visual de Hutchison Ports (Sea Blue con texto blanco)
 
 import customtkinter as ctk
 from tkinter import messagebox
-from smart_reports.config.hutchison_identity import (
+from smart_reports.config.identity import (
     HUTCHISON_COLORS,
     get_hutchison_theme,
     get_font
 )
-from smart_reports.ui.components.hutchison_widgets import HutchisonLabel
+from smart_reports.ui.components.widgets import HutchisonLabel
 
 
 class HutchisonSidebar(ctk.CTkFrame):

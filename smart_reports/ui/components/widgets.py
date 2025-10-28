@@ -9,7 +9,7 @@ de identidad visual de Hutchison Ports.
 import customtkinter as ctk
 import tkinter as tk
 import math
-from smart_reports.config.hutchison_identity import (
+from smart_reports.config.identity import (
     HUTCHISON_COLORS,
     DYNAMIC_ANGLE,
     get_hutchison_theme,
@@ -235,7 +235,7 @@ class HutchisonButton(ctk.CTkButton):
         fg_color = color_map.get(button_type, self.theme['primary'])
 
         # Calcular color hover (más oscuro)
-        from smart_reports.config.hutchison_identity import darken_color
+        from smart_reports.config.identity import darken_color
         hover_color = darken_color(fg_color, 0.15)
 
         # Fuente corporativa para botones

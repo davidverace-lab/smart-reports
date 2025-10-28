@@ -1,13 +1,27 @@
 """
-Componente ConfigCard - Card para opciones de configuración
+ConfigCard con diseño corporativo Hutchison Ports
+Tarjeta de configuración con borde angulado y colores corporativos
 """
+
 import customtkinter as ctk
+from smart_reports.config.identity import (
+    get_hutchison_theme,
+    get_font,
+    darken_color
+)
+from smart_reports.ui.components.widgets import (
+    HutchisonButton,
+    HutchisonLabel
+)
 
 
-class ConfigCard(ctk.CTkFrame):
-    """Card para opciones de configuración con icono, título, descripción y botón"""
+class HutchisonConfigCard(ctk.CTkFrame):
+    """
+    Tarjeta de configuración con diseño Hutchison Ports
+    """
 
-    def __init__(self, parent, icon, title, description, button_text, button_color='#6c63ff', command=None, **kwargs):
+    def __init__(self, parent, icon, title, description, button_text,
+                 button_color=None, command=None, **kwargs):
         """
         Args:
             parent: Widget padre
@@ -15,122 +29,94 @@ class ConfigCard(ctk.CTkFrame):
             title: Título de la opción
             description: Descripción de la funcionalidad
             button_text: Texto del botón
-            button_color: Color del botón (hex)
+            button_color: Color del botón (por defecto Ports Sky Blue)
             command: Función a ejecutar al hacer clic
         """
+        self.theme = get_hutchison_theme()
+        self.command = command
+        self.button_color = button_color or self.theme['primary']
+
         super().__init__(
             parent,
-            fg_color='#2b2d42',
-            corner_radius=15,
-            border_width=1,
-            border_color='#3a3d5c',
+            fg_color=self.theme['surface'],
+            corner_radius=0,
+            border_width=2,
+            border_color=self.theme['border'],
             **kwargs
         )
 
-        self.command = command
-        self.button_color = button_color
-
         # Container principal con padding
         main_container = ctk.CTkFrame(self, fg_color='transparent')
-        main_container.pack(fill='both', expand=True, padx=25, pady=25)
+        main_container.pack(fill='both', expand=True, padx=30, pady=30)
 
-        # Configurar hover effect en el card
-        self.bind('<Enter>', lambda e: self.configure(border_color=button_color))
-        self.bind('<Leave>', lambda e: self.configure(border_color='#3a3d5c'))
-
-        # Icono con color
+        # Icono con color corporativo
         icon_label = ctk.CTkLabel(
             main_container,
             text=icon,
-            font=('Segoe UI', 48),
-            text_color=button_color,  # Color del icono igual al del botón
+            font=get_font('heading', 52, 'normal'),
+            text_color=self.button_color,
             anchor='center'
         )
         icon_label.pack(pady=(0, 15))
 
-        # Título
-        title_label = ctk.CTkLabel(
+        # Título (Montserrat Bold)
+        title_label = HutchisonLabel(
             main_container,
             text=title,
-            font=('Segoe UI', 20, 'bold'),
-            text_color='#ffffff',
-            anchor='center'
+            label_type='heading'
         )
-        title_label.pack(pady=(0, 10))
+        title_label.configure(
+            font=get_font('heading', 18, 'bold'),
+            text_color=self.theme['text'],
+            anchor='center',
+            justify='center'
+        )
+        title_label.pack(pady=(0, 12))
 
-        # Descripción (solo si no está vacía)
+        # Descripción (Arial Regular)
         if description:
-            desc_label = ctk.CTkLabel(
+            desc_label = HutchisonLabel(
                 main_container,
                 text=description,
-                font=('Segoe UI', 12),
-                text_color='#a0a0b0',
-                anchor='center',
-                wraplength=250,
-                justify='center'
+                label_type='body'
             )
-            desc_label.pack(pady=(0, 20))
-        else:
-            # Espacio en blanco si no hay descripción
-            spacer_desc = ctk.CTkFrame(main_container, fg_color='transparent', height=20)
-            spacer_desc.pack()
+            desc_label.configure(
+                font=get_font('body', 12, 'normal'),
+                text_color=self.theme['text_secondary'],
+                anchor='center',
+                justify='center',
+                wraplength=280
+            )
+            desc_label.pack(pady=(0, 25))
 
         # Spacer para empujar el botón al fondo
         spacer = ctk.CTkFrame(main_container, fg_color='transparent')
         spacer.pack(fill='both', expand=True)
 
-        # Botón de acción - con configuración mejorada para garantizar visibilidad
+        # Botón de acción (corporativo)
         self.action_btn = ctk.CTkButton(
             main_container,
             text=button_text,
-            font=('Segoe UI', 14, 'bold'),
-            fg_color=button_color,
-            hover_color=self._darken_color(button_color),
-            corner_radius=10,
-            height=45,
-            width=200,
-            border_width=2,
-            border_color=button_color,
-            text_color='#ffffff',
-            text_color_disabled='#a0a0b0',
+            font=get_font('body', 14, 'bold'),
+            fg_color=self.button_color,
+            hover_color=darken_color(self.button_color, 0.15),
+            text_color=self.theme['text_on_primary'],
+            corner_radius=5,
+            height=50,
+            border_width=0,
             command=self._on_button_click,
             cursor='hand2'
         )
-        self.action_btn.pack(pady=(5, 0))
+        self.action_btn.pack(fill='x', pady=(10, 0))
 
-        # Efecto hover en el botón
-        self.action_btn.bind('<Enter>', self._on_button_hover_enter)
-        self.action_btn.bind('<Leave>', self._on_button_hover_leave)
+        # Efecto hover en el borde de la tarjeta
+        self.bind('<Enter>', lambda e: self.configure(border_color=self.button_color))
+        self.bind('<Leave>', lambda e: self.configure(border_color=self.theme['border']))
 
     def _on_button_click(self):
         """Ejecutar comando del botón"""
         if self.command:
             self.command()
 
-    def _darken_color(self, hex_color, factor=0.8):
-        """Oscurecer un color hex para el estado hover"""
-        hex_color = hex_color.lstrip('#')
-        rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        darkened_rgb = tuple(int(c * factor) for c in rgb)
-        return f"#{darkened_rgb[0]:02x}{darkened_rgb[1]:02x}{darkened_rgb[2]:02x}"
 
-    def _on_button_hover_enter(self, event):
-        """Efecto al pasar el cursor sobre el botón"""
-        self.action_btn.configure(
-            border_color=self._lighten_color(self.button_color),
-            border_width=2
-        )
-
-    def _on_button_hover_leave(self, event):
-        """Efecto al salir el cursor del botón"""
-        self.action_btn.configure(
-            border_color=self.button_color,
-            border_width=2
-        )
-
-    def _lighten_color(self, hex_color, factor=1.2):
-        """Aclarar un color hex"""
-        hex_color = hex_color.lstrip('#')
-        rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
-        lightened_rgb = tuple(min(255, int(c * factor)) for c in rgb)
-        return f"#{lightened_rgb[0]:02x}{lightened_rgb[1]:02x}{lightened_rgb[2]:02x}"
+__all__ = ['HutchisonConfigCard']
