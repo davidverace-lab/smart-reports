@@ -1,13 +1,10 @@
 """
-UI Components package - Componentes reutilizables de la interfaz moderna
+UI Components package - Componentes reutilizables corporativos Hutchison Ports
 """
 from smart_reports.ui.components.metric_card import MetricCard
-from smart_reports.ui.components.chart_card import ChartCard
-from smart_reports.ui.components.modern_sidebar import ModernSidebar
-from smart_reports.ui.components.config_card import ConfigCard
 
 # Componentes corporativos Hutchison Ports
-from smart_reports.ui.components.hutchison_widgets import (
+from smart_reports.ui.components.widgets import (
     AngledHeaderFrame,
     AngledDivider,
     AngledCard,
@@ -16,15 +13,12 @@ from smart_reports.ui.components.hutchison_widgets import (
     LogoFrame,
     MetricCardAngled
 )
-from smart_reports.ui.components.hutchison_sidebar import HutchisonSidebar
-from smart_reports.ui.components.hutchison_config_card import HutchisonConfigCard
+from smart_reports.ui.components.sidebar import HutchisonSidebar
+from smart_reports.ui.components.config_card import HutchisonConfigCard
 
 __all__ = [
     'MetricCard',
-    'ChartCard',
-    'ModernSidebar',
-    'ConfigCard',
-    # Hutchison Ports
+    # Componentes Hutchison Ports
     'AngledHeaderFrame',
     'AngledDivider',
     'AngledCard',

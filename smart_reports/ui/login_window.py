@@ -4,7 +4,7 @@ Pantalla de Login con diseño corporativo
 Versión 2.0
 """
 import customtkinter as ctk
-from smart_reports.config.hutchison_identity import get_hutchison_theme, get_font, HUTCHISON_COLORS
+from smart_reports.config.identity import get_hutchison_theme, get_font, HUTCHISON_COLORS
 
 
 class LoginWindow(ctk.CTkFrame):

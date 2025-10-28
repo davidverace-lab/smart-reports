@@ -17,12 +17,12 @@ except ImportError:
     DRAG_DROP_AVAILABLE = False
     print("⚠️ tkinterdnd2 no disponible. Drag & drop deshabilitado.")
 
-from smart_reports.config.hutchison_identity import get_hutchison_theme, get_font
+from smart_reports.config.identity import get_hutchison_theme, get_font
 from smart_reports.database.connection import DatabaseConnection
 from smart_reports.services.data_processor import TranscriptProcessor
 
 # Componentes corporativos Hutchison
-from smart_reports.ui.components.hutchison_widgets import (
+from smart_reports.ui.components.widgets import (
     AngledHeaderFrame,
     AngledDivider,
     HutchisonButton,
@@ -31,8 +31,8 @@ from smart_reports.ui.components.hutchison_widgets import (
     MetricCardAngled,
     AngledCard
 )
-from smart_reports.ui.components.hutchison_sidebar import HutchisonSidebar
-from smart_reports.ui.components.hutchison_config_card import HutchisonConfigCard
+from smart_reports.ui.components.sidebar import HutchisonSidebar
+from smart_reports.ui.components.config_card import HutchisonConfigCard
 from smart_reports.ui.dialogs.user_management_dialog import UserManagementDialog
 
 

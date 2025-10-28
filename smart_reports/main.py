@@ -21,7 +21,7 @@ except ImportError:
     DRAG_DROP_AVAILABLE = False
     print("⚠️  tkinterdnd2 no disponible. Drag & drop deshabilitado.")
 
-from smart_reports.ui.main_window_hutchison import MainWindow
+from smart_reports.ui.main_window import MainWindow
 from smart_reports.ui.login_window import LoginWindow
 
 

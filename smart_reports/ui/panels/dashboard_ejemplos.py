@@ -3,8 +3,8 @@ Panel de Dashboard con Ejemplos de Gráficos Plotly
 Visualización de datos con gráficos interactivos
 """
 import customtkinter as ctk
-from smart_reports.config.hutchison_identity import get_hutchison_theme, get_font
-from smart_reports.ui.components.hutchison_widgets import (
+from smart_reports.config.identity import get_hutchison_theme, get_font
+from smart_reports.ui.components.widgets import (
     AngledCard,
     HutchisonLabel
 )
