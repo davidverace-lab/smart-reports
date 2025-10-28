@@ -22,6 +22,42 @@ except ImportError:
     print("⚠️  tkinterdnd2 no disponible. Drag & drop deshabilitado.")
 
 from smart_reports.ui.main_window_hutchison import MainWindow
+from smart_reports.ui.login_window import LoginWindow
+
+
+class Application:
+    """Clase principal que maneja Login y MainWindow"""
+
+    def __init__(self, root):
+        self.root = root
+        self.root.title("SMART REPORTS - HUTCHISON PORTS")
+        self.root.geometry("1400x900")
+
+        # Centrar ventana en pantalla
+        self.root.update_idletasks()
+        width = self.root.winfo_width()
+        height = self.root.winfo_height()
+        x = (self.root.winfo_screenwidth() // 2) - (width // 2)
+        y = (self.root.winfo_screenheight() // 2) - (height // 2)
+        self.root.geometry(f'{width}x{height}+{x}+{y}')
+
+        self.current_user = None
+        self.main_window = None
+
+        # Mostrar login primero
+        self._show_login()
+
+    def _show_login(self):
+        """Mostrar pantalla de login"""
+        self.login_window = LoginWindow(self.root, self._on_login_success)
+        self.login_window.pack(fill='both', expand=True)
+
+    def _on_login_success(self, username):
+        """Callback cuando el login es exitoso"""
+        self.current_user = username
+
+        # Crear y mostrar ventana principal
+        self.main_window = MainWindow(self.root, username)
 
 
 def main():
@@ -46,8 +82,6 @@ def main():
         try:
             root = TkinterDnD.Tk()
             root.configure(bg='#FFFFFF')
-            root.title("SMART REPORTS - HUTCHISON PORTS")
-            root.geometry("1400x900")
         except Exception as e:
             print(f"⚠️  Error al inicializar TkinterDnD: {e}")
             print("   Usando CTk normal...")
@@ -55,8 +89,8 @@ def main():
     else:
         root = ctk.CTk()
 
-    # Crear aplicación
-    app = MainWindow(root)
+    # Crear aplicación con login
+    app = Application(root)
 
     # Iniciar loop
     root.mainloop()
