@@ -39,10 +39,9 @@ from smart_reports.ui.dialogs.user_management_dialog import UserManagementDialog
 class MainWindow:
     """Ventana principal - Diseño Corporativo Hutchison Ports"""
 
-    def __init__(self, root):
+    def __init__(self, root, username="Usuario"):
         self.root = root
-        self.root.title("SMART REPORTS - HUTCHISON PORTS")
-        self.root.geometry("1400x900")
+        self.username = username  # Nombre del usuario logueado
 
         # Tema corporativo
         self.theme = get_hutchison_theme()
@@ -73,7 +72,7 @@ class MainWindow:
         self._create_interface()
 
     def _create_interface(self):
-        """Crear interfaz principal"""
+        """Crear interfaz principal con layout responsive (grid)"""
         # Container principal
         self.main_container = ctk.CTkFrame(
             self.root,
@@ -82,17 +81,31 @@ class MainWindow:
         )
         self.main_container.pack(fill='both', expand=True)
 
-        # Barra superior con logo
+        # Configurar grid del container principal
+        self.main_container.grid_rowconfigure(0, weight=0)    # Logo bar (fijo)
+        self.main_container.grid_rowconfigure(1, weight=0)    # Welcome header (fijo)
+        self.main_container.grid_rowconfigure(2, weight=1)    # Contenido (expandible)
+        self.main_container.grid_columnconfigure(0, weight=1)
+
+        # FILA 0: Barra superior con logo
         self._create_top_bar()
 
-        # Container para sidebar + contenido
+        # FILA 1: Header de Bienvenida
+        self._create_welcome_header()
+
+        # FILA 2: Container para sidebar + contenido (grid interno)
         content_container = ctk.CTkFrame(
             self.main_container,
             fg_color='transparent'
         )
-        content_container.pack(fill='both', expand=True)
+        content_container.grid(row=2, column=0, sticky='nsew')
 
-        # Sidebar corporativo (Sea Blue)
+        # Configurar grid interno para responsive
+        content_container.grid_rowconfigure(0, weight=1)       # Fila de contenido expandible
+        content_container.grid_columnconfigure(0, weight=0)    # Sidebar (ancho fijo)
+        content_container.grid_columnconfigure(1, weight=1)    # Contenido (expandible)
+
+        # Sidebar corporativo (Sea Blue) - Columna 0
         navigation_callbacks = {
             'dashboard': self.show_dashboard,
             'consultas': self.show_consultas,
@@ -101,15 +114,15 @@ class MainWindow:
         }
 
         self.sidebar = HutchisonSidebar(content_container, navigation_callbacks)
-        self.sidebar.pack(side='left', fill='y')
+        self.sidebar.grid(row=0, column=0, sticky='nsw')
 
-        # Área de contenido
+        # Área de contenido - Columna 1
         self.content_area = ctk.CTkFrame(
             content_container,
             fg_color=self.theme['background'],
             corner_radius=0
         )
-        self.content_area.pack(side='left', fill='both', expand=True)
+        self.content_area.grid(row=0, column=1, sticky='nsew')
 
         # Mostrar dashboard inicial
         self.show_dashboard()
@@ -123,20 +136,46 @@ class MainWindow:
             height=80,
             corner_radius=0
         )
-        top_bar.pack(fill='x')
-        top_bar.pack_propagate(False)
+        top_bar.grid(row=0, column=0, sticky='ew')
+        top_bar.grid_propagate(False)
 
         # Logo en esquina superior izquierda (obligatorio)
         logo = LogoFrame(top_bar)
         logo.pack(side='left', padx=20, pady=10)
 
-        # Separador Sky Blue
-        separator = ctk.CTkFrame(
+    def _create_welcome_header(self):
+        """Crear header de bienvenida con nombre de usuario"""
+        # Frame del header
+        header_frame = ctk.CTkFrame(
             self.main_container,
-            height=3,
-            fg_color=self.theme['primary']
+            fg_color=self.theme['primary'],  # Sky Blue
+            height=60,
+            corner_radius=0
         )
-        separator.pack(fill='x')
+        header_frame.grid(row=1, column=0, sticky='ew')
+        header_frame.grid_propagate(False)
+
+        # Texto de bienvenida
+        welcome_text = ctk.CTkLabel(
+            header_frame,
+            text=f'Bienvenido, {self.username}',
+            font=get_font('heading', 20, 'bold'),
+            text_color=self.theme['text_on_primary'],
+            anchor='w'
+        )
+        welcome_text.pack(side='left', padx=30, pady=15)
+
+        # Información adicional (fecha actual)
+        from datetime import datetime
+        date_text = datetime.now().strftime('%d de %B, %Y')
+        date_label = ctk.CTkLabel(
+            header_frame,
+            text=date_text,
+            font=get_font('body', 12),
+            text_color=self.theme['text_on_primary'],
+            anchor='e'
+        )
+        date_label.pack(side='right', padx=30, pady=15)
 
     def clear_content_area(self):
         """Limpiar área de contenido"""
@@ -146,24 +185,80 @@ class MainWindow:
     # ==================== DASHBOARD ====================
 
     def show_dashboard(self):
-        """Panel de Dashboard con diseño Hutchison"""
+        """Panel de Dashboard con diseño Hutchison y pestañas con carga perezosa"""
         self.clear_content_area()
         self.current_panel = 'dashboard'
 
-        scroll_frame = ctk.CTkScrollableFrame(
-            self.content_area,
-            fg_color='transparent'
-        )
-        scroll_frame.pack(fill='both', expand=True, padx=20, pady=20)
+        # Flags para carga perezosa
+        if not hasattr(self, '_dashboard_tabs_loaded'):
+            self._dashboard_tabs_loaded = {
+                'General': False,
+                'Dashboards de Ejemplo': False
+            }
+
+        # Container principal
+        main_frame = ctk.CTkFrame(self.content_area, fg_color='transparent')
+        main_frame.pack(fill='both', expand=True, padx=20, pady=20)
 
         # Header angulado
         header = AngledHeaderFrame(
-            scroll_frame,
+            main_frame,
             text='Dashboard',
             height=80,
             color=self.theme['primary']
         )
         header.pack(fill='x', pady=(0, 20))
+
+        # TabView con carga perezosa
+        self.tab_view = ctk.CTkTabview(
+            main_frame,
+            fg_color=self.theme['surface'],
+            segmented_button_fg_color=self.theme['primary'],
+            segmented_button_selected_color=self.theme['secondary'],
+            segmented_button_unselected_color=self.theme['primary'],
+            text_color=self.theme['text_on_primary']
+        )
+        self.tab_view.pack(fill='both', expand=True)
+
+        # Crear pestañas
+        self.tab_view.add('General')
+        self.tab_view.add('Dashboards de Ejemplo')
+
+        # Configurar grid para que el contenido sea expandible
+        self.tab_view.tab('General').grid_rowconfigure(0, weight=1)
+        self.tab_view.tab('General').grid_columnconfigure(0, weight=1)
+        self.tab_view.tab('Dashboards de Ejemplo').grid_rowconfigure(0, weight=1)
+        self.tab_view.tab('Dashboards de Ejemplo').grid_columnconfigure(0, weight=1)
+
+        # Configurar comando para detectar cambio de pestaña
+        self.tab_view.configure(command=self._on_dashboard_tab_change)
+
+        # Cargar pestaña General inmediatamente
+        self._load_general_tab()
+
+    def _on_dashboard_tab_change(self):
+        """Manejar cambio de pestaña con carga perezosa"""
+        current_tab = self.tab_view.get()
+
+        # Cargar contenido solo si no ha sido cargado antes
+        if current_tab == 'Dashboards de Ejemplo' and not self._dashboard_tabs_loaded['Dashboards de Ejemplo']:
+            self._load_ejemplos_tab()
+        elif current_tab == 'General' and not self._dashboard_tabs_loaded['General']:
+            self._load_general_tab()
+
+    def _load_general_tab(self):
+        """Cargar contenido de la pestaña General"""
+        if self._dashboard_tabs_loaded['General']:
+            return
+
+        tab = self.tab_view.tab('General')
+
+        # Scroll frame dentro de la pestaña
+        scroll_frame = ctk.CTkScrollableFrame(
+            tab,
+            fg_color='transparent'
+        )
+        scroll_frame.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)
 
         # Divisor
         divider = AngledDivider(
@@ -204,6 +299,149 @@ class MainWindow:
         )
         info_text.configure(wraplength=800, justify='left')
         info_text.pack(pady=10)
+
+        # Marcar como cargado
+        self._dashboard_tabs_loaded['General'] = True
+
+    def _load_ejemplos_tab(self):
+        """Cargar contenido de la pestaña Dashboards de Ejemplo (con gráficos Plotly)"""
+        if self._dashboard_tabs_loaded['Dashboards de Ejemplo']:
+            return
+
+        tab = self.tab_view.tab('Dashboards de Ejemplo')
+
+        # Scroll frame
+        scroll_frame = ctk.CTkScrollableFrame(
+            tab,
+            fg_color='transparent'
+        )
+        scroll_frame.grid(row=0, column=0, sticky='nsew', padx=10, pady=10)
+
+        # Título
+        title_label = HutchisonLabel(
+            scroll_frame,
+            text='Gráficos de Ejemplo - Visualización de Datos',
+            label_type='heading'
+        )
+        title_label.configure(font=get_font('heading', 20, 'bold'))
+        title_label.pack(pady=(10, 20))
+
+        # Crear 3 gráficos de ejemplo con Plotly
+        self._create_example_charts(scroll_frame)
+
+        # Marcar como cargado
+        self._dashboard_tabs_loaded['Dashboards de Ejemplo'] = True
+
+    def _create_example_charts(self, parent):
+        """Crear gráficos de ejemplo con Plotly"""
+        try:
+            import plotly.graph_objects as go
+            from plotly.subplots import make_subplots
+            import tkinter as tk
+            from tkinterweb import HtmlFrame
+
+            # Card 1: Gráfico de barras
+            card1 = AngledCard(
+                parent,
+                title='Ejemplo 1: Progreso por Módulo',
+                header_color=self.theme['primary']
+            )
+            card1.pack(fill='x', pady=15)
+
+            fig1 = go.Figure(data=[
+                go.Bar(
+                    x=['Módulo A', 'Módulo B', 'Módulo C', 'Módulo D', 'Módulo E'],
+                    y=[45, 78, 62, 91, 53],
+                    marker_color=self.theme['primary']
+                )
+            ])
+            fig1.update_layout(
+                title='Porcentaje de Completado por Módulo',
+                yaxis_title='Porcentaje (%)',
+                height=350
+            )
+
+            html1 = fig1.to_html(include_plotlyjs='cdn')
+            frame1 = HtmlFrame(card1.content_frame, messages_enabled=False)
+            frame1.load_html(html1)
+            frame1.pack(fill='both', expand=True, padx=10, pady=10)
+
+            # Card 2: Gráfico de líneas
+            card2 = AngledCard(
+                parent,
+                title='Ejemplo 2: Tendencia de Usuarios Activos',
+                header_color=self.theme['secondary']
+            )
+            card2.pack(fill='x', pady=15)
+
+            fig2 = go.Figure(data=[
+                go.Scatter(
+                    x=['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
+                    y=[120, 145, 138, 167, 189, 201],
+                    mode='lines+markers',
+                    line=dict(color=self.theme['secondary'], width=3)
+                )
+            ])
+            fig2.update_layout(
+                title='Usuarios Activos Mensuales',
+                yaxis_title='Usuarios',
+                height=350
+            )
+
+            html2 = fig2.to_html(include_plotlyjs='cdn')
+            frame2 = HtmlFrame(card2.content_frame, messages_enabled=False)
+            frame2.load_html(html2)
+            frame2.pack(fill='both', expand=True, padx=10, pady=10)
+
+            # Card 3: Gráfico de pie
+            card3 = AngledCard(
+                parent,
+                title='Ejemplo 3: Distribución por Categoría',
+                header_color=self.theme['accent_yellow']
+            )
+            card3.pack(fill='x', pady=15)
+
+            fig3 = go.Figure(data=[
+                go.Pie(
+                    labels=['Seguridad', 'Operaciones', 'Logística', 'Calidad', 'Administración'],
+                    values=[30, 25, 20, 15, 10],
+                    marker=dict(colors=[
+                        self.theme['primary'],
+                        self.theme['secondary'],
+                        self.theme['accent_yellow'],
+                        self.theme['accent_orange'],
+                        self.theme['accent_green']
+                    ])
+                )
+            ])
+            fig3.update_layout(title='Usuarios por Categoría', height=350)
+
+            html3 = fig3.to_html(include_plotlyjs='cdn')
+            frame3 = HtmlFrame(card3.content_frame, messages_enabled=False)
+            frame3.load_html(html3)
+            frame3.pack(fill='both', expand=True, padx=10, pady=10)
+
+        except ImportError as e:
+            # Si Plotly o tkinterweb no están disponibles, mostrar mensaje
+            error_label = HutchisonLabel(
+                parent,
+                text=(
+                    'Gráficos de Plotly no disponibles.\n\n'
+                    'Instala las dependencias:\n'
+                    'pip install plotly tkinterweb'
+                ),
+                label_type='body'
+            )
+            error_label.configure(text_color='red')
+            error_label.pack(pady=50)
+        except Exception as e:
+            error_label = HutchisonLabel(
+                parent,
+                text=f'Error al cargar gráficos: {str(e)}',
+                label_type='body'
+            )
+            error_label.configure(text_color='red')
+            error_label.pack(pady=50)
 
     def _create_metrics_grid(self, parent):
         """Crear grid de métricas con tarjetas anguladas"""
@@ -366,6 +604,164 @@ class MainWindow:
             label_type='body'
         )
         self.search_result_label.pack(pady=30)
+
+        # Card de tabla de usuarios (con tksheet)
+        table_card = AngledCard(
+            scroll_frame,
+            title='Todos los Usuarios (Tabla Interactiva)',
+            header_color=self.theme['secondary']
+        )
+        table_card.pack(fill='both', expand=True, pady=20)
+
+        # Botón para cargar tabla
+        load_btn_frame = ctk.CTkFrame(table_card.content_frame, fg_color='transparent')
+        load_btn_frame.pack(fill='x', pady=(10, 20))
+
+        HutchisonButton(
+            load_btn_frame,
+            text='Cargar Todos los Usuarios',
+            button_type='secondary',
+            command=self._load_users_table
+        ).pack(pady=10)
+
+        # Container para la tabla
+        self.table_container = ctk.CTkFrame(
+            table_card.content_frame,
+            fg_color=self.theme['background'],
+            corner_radius=10,
+            height=400
+        )
+        self.table_container.pack(fill='both', expand=True, padx=10, pady=10)
+        self.table_container.pack_propagate(False)
+
+    def _load_users_table(self):
+        """Cargar tabla de usuarios con tksheet"""
+        if not self.conn:
+            messagebox.showerror("Error", "No hay conexión a la base de datos")
+            return
+
+        try:
+            # Importar tksheet
+            from tksheet import Sheet
+            import tkinter as tk
+
+            # Limpiar container
+            for widget in self.table_container.winfo_children():
+                widget.destroy()
+
+            # Obtener datos de usuarios
+            self.cursor.execute("""
+                SELECT
+                    u.UserId,
+                    u.Nombre,
+                    u.Email,
+                    un.NombreUnidad
+                FROM Instituto_Usuario u
+                LEFT JOIN Instituto_UnidadDeNegocio un
+                    ON u.IdUnidadDeNegocio = un.IdUnidadDeNegocio
+                ORDER BY u.UserId
+            """)
+
+            rows = self.cursor.fetchall()
+
+            # Crear Sheet
+            self.users_sheet = Sheet(
+                self.table_container,
+                data=[[row[0], row[1] or '', row[2] or '', row[3] or ''] for row in rows],
+                headers=['User ID', 'Nombre', 'Email', 'Unidad de Negocio'],
+                theme='light blue',
+                height=380,
+                width=900
+            )
+
+            # Configurar colores corporativos Hutchison
+            self.users_sheet.change_theme(
+                theme='light blue',
+                redraw=False
+            )
+
+            # Personalizar colores
+            self.users_sheet.set_options(
+                header_bg=self.theme['secondary'],  # Sea Blue
+                header_fg=self.theme['text_on_primary'],  # White
+                index_bg=self.theme['surface'],
+                index_fg=self.theme['text'],
+                table_bg=self.theme['background'],
+                table_fg=self.theme['text'],
+                table_selected_cells_bg=self.theme['primary'],  # Sky Blue
+                table_selected_cells_fg=self.theme['text_on_primary']
+            )
+
+            # Habilitar funcionalidades
+            self.users_sheet.enable_bindings(
+                'single_select',
+                'row_select',
+                'column_width_resize',
+                'arrowkeys',
+                'right_click_popup_menu',
+                'rc_select',
+                'copy',
+                'select_all'
+            )
+
+            # Menú contextual personalizado
+            self.users_sheet.popup_menu_add_command(
+                'Eliminar fila seleccionada',
+                self._delete_selected_row
+            )
+
+            self.users_sheet.pack(fill='both', expand=True)
+
+            messagebox.showinfo(
+                "Éxito",
+                f"Se cargaron {len(rows)} usuarios en la tabla.\n\n" +
+                "Funcionalidades disponibles:\n" +
+                "• Click derecho para menú contextual\n" +
+                "• Seleccionar filas\n" +
+                "• Copiar datos (Ctrl+C)\n" +
+                "• Redimensionar columnas"
+            )
+
+        except ImportError:
+            # Si tksheet no está instalado
+            error_label = HutchisonLabel(
+                self.table_container,
+                text=(
+                    'La librería tksheet no está instalada.\n\n'
+                    'Instálala con:\n'
+                    'pip install tksheet'
+                ),
+                label_type='body'
+            )
+            error_label.configure(text_color='red')
+            error_label.pack(expand=True)
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Error al cargar tabla:\n{str(e)}")
+
+    def _delete_selected_row(self):
+        """Eliminar fila seleccionada de la tabla"""
+        if not hasattr(self, 'users_sheet'):
+            return
+
+        selected = self.users_sheet.get_currently_selected()
+
+        if not selected:
+            messagebox.showwarning("Advertencia", "Seleccione una fila primero")
+            return
+
+        row = selected.row if hasattr(selected, 'row') else selected[0]
+
+        # Confirmar eliminación
+        confirm = messagebox.askyesno(
+            "Confirmar",
+            "¿Desea eliminar la fila seleccionada de la tabla?\n\n" +
+            "(Esto solo la quita de la vista, no de la base de datos)"
+        )
+
+        if confirm:
+            self.users_sheet.delete_row(row)
+            messagebox.showinfo("Éxito", "Fila eliminada de la tabla")
 
     def search_user(self):
         """Buscar usuario por ID"""
