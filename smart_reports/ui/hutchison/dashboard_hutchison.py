@@ -67,18 +67,19 @@ class DashboardHutchison(ctk.CTkFrame):
         )
         title_label.grid(row=0, column=0, sticky='w', pady=(0, 20))
 
-        # TabView con diseño mejorado
+        # TabView con diseño MEJORADO (CRÍTICO: tabs más grandes y visibles)
         self.tabview = ctk.CTkTabview(
             main_container,
             fg_color=get_color('White'),
-            segmented_button_fg_color=get_color('Light Gray'),
+            segmented_button_fg_color=get_color('Surface'),
             segmented_button_selected_color=get_color('Sky Blue'),
             segmented_button_selected_hover_color=get_color('Sea Blue'),
-            segmented_button_unselected_color=get_color('Light Gray'),
-            segmented_button_unselected_hover_color=get_color('Border'),
-            text_color=get_color('Sea Blue'),
-            text_color_disabled=get_color('Light Text'),
-            corner_radius=10
+            segmented_button_unselected_color=get_color('Surface'),
+            segmented_button_unselected_hover_color=get_color('Light Gray'),
+            text_color=get_color('White'),  # Texto blanco en tab activa
+            text_color_disabled=get_color('Sea Blue'),  # Texto oscuro en tabs inactivas
+            corner_radius=10,
+            height=45  # Altura mínima para tabs más grandes
         )
         self.tabview.grid(row=1, column=0, sticky='nsew')
 
@@ -87,9 +88,12 @@ class DashboardHutchison(ctk.CTkFrame):
         self.tabview.add('Progreso por Módulo')
         self.tabview.add('Dashboards de Ejemplo')
 
-        # Aumentar tamaño de fuente de tabs
+        # CRÍTICO: Aumentar tamaño de fuente de tabs a 13px Bold Montserrat
         try:
-            self.tabview._segmented_button.configure(font=get_font('heading_medium', 14, 'bold'))
+            self.tabview._segmented_button.configure(
+                font=('Montserrat', 13, 'bold'),
+                height=45  # Altura de botones de tabs
+            )
         except:
             pass
 
@@ -117,7 +121,7 @@ class DashboardHutchison(ctk.CTkFrame):
         self._tabs_loaded[tab_name] = True
 
     def _create_general_tab(self):
-        """Tab General: métricas generales"""
+        """Tab General: métricas generales según captura (3 cards + 2 charts)"""
         tab = self.tabview.tab('General')
 
         # Scroll frame
@@ -127,10 +131,12 @@ class DashboardHutchison(ctk.CTkFrame):
         )
         scroll_frame.pack(fill='both', expand=True, padx=10, pady=10)
 
-        # Grid de métricas (4 cards)
+        # ═══════════════════════════════════════════════════
+        # ROW 1: Grid de métricas (3 CARDS según captura)
+        # ═══════════════════════════════════════════════════
         metrics_container = ctk.CTkFrame(scroll_frame, fg_color='transparent')
-        metrics_container.pack(fill='x', pady=20)
-        metrics_container.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        metrics_container.pack(fill='x', pady=(0, 20))
+        metrics_container.grid_columnconfigure((0, 1, 2), weight=1)
 
         # Obtener datos
         if self.cursor:
@@ -139,18 +145,13 @@ class DashboardHutchison(ctk.CTkFrame):
                 self.cursor.execute("SELECT COUNT(*) FROM Instituto_Usuario")
                 total_users = self.cursor.fetchone()[0]
 
-                # Total módulos
+                # Total módulos activos y total
                 self.cursor.execute("SELECT COUNT(*) FROM Instituto_Modulo WHERE Activo = 1")
+                active_modules = self.cursor.fetchone()[0]
+                self.cursor.execute("SELECT COUNT(*) FROM Instituto_Modulo")
                 total_modules = self.cursor.fetchone()[0]
 
-                # Completados
-                self.cursor.execute("""
-                    SELECT COUNT(*) FROM Instituto_ProgresoModulo
-                    WHERE EstatusModuloUsuario = 'Completado'
-                """)
-                completed = self.cursor.fetchone()[0]
-
-                # Progreso global
+                # Tasa de completado
                 self.cursor.execute("""
                     SELECT
                         COUNT(CASE WHEN EstatusModuloUsuario = 'Completado' THEN 1 END) * 100.0 /
@@ -158,32 +159,32 @@ class DashboardHutchison(ctk.CTkFrame):
                     FROM Instituto_ProgresoModulo
                 """)
                 result = self.cursor.fetchone()
-                progress = f'{result[0]:.1f}%' if result and result[0] else '0%'
+                completion_rate = f'{result[0]:.1f}%' if result and result[0] else '0.0%'
 
             except Exception as e:
                 print(f"Error cargando métricas: {e}")
                 total_users = 0
-                total_modules = 0
-                completed = 0
-                progress = '0%'
+                active_modules = 0
+                total_modules = 14
+                completion_rate = '0.0%'
         else:
             # Datos de demostración
-            total_users = 156
+            total_users = 1525
+            active_modules = 0
             total_modules = 14
-            completed = 892
-            progress = '73.5%'
+            completion_rate = '0.0%'
 
-        # Crear cards de métricas
+        # Crear 3 cards de métricas según captura
         metrics_data = [
-            ('Total Usuarios', f'{total_users:,}', 'Sky Blue'),
-            ('Módulos', str(total_modules), 'Success Green'),
-            ('Completados', f'{completed:,}', 'Warning Orange'),
-            ('Progreso Global', progress, 'Aqua Green'),
+            ('👥', 'Total de Usuarios', f'{total_users:,}', 'Sky Blue'),
+            ('📚', 'Módulos Activos', f'{active_modules}/{total_modules}', 'Success Green'),
+            ('✅', 'Tasa de Completado', completion_rate, 'Warning Orange'),
         ]
 
-        for idx, (title, value, color_name) in enumerate(metrics_data):
-            self._create_metric_card(
+        for idx, (icon, title, value, color_name) in enumerate(metrics_data):
+            self._create_metric_card_with_icon(
                 metrics_container,
+                icon,
                 title,
                 value,
                 color_name,
@@ -191,69 +192,270 @@ class DashboardHutchison(ctk.CTkFrame):
                 col=idx
             )
 
-        # Información del sistema
-        info_card = ctk.CTkFrame(
-            scroll_frame,
-            fg_color=get_color('Surface'),
-            border_width=1,
-            border_color=get_color('Border'),
-            corner_radius=15
-        )
-        info_card.pack(fill='x', pady=20, padx=10)
+        # ═══════════════════════════════════════════════════
+        # ROW 2: Gráficos (2 charts lado a lado)
+        # ═══════════════════════════════════════════════════
+        charts_container = ctk.CTkFrame(scroll_frame, fg_color='transparent')
+        charts_container.pack(fill='both', expand=True, pady=(0, 20))
+        charts_container.grid_columnconfigure((0, 1), weight=1)
+        charts_container.grid_rowconfigure(0, weight=1)
 
-        info_title = ctk.CTkLabel(
-            info_card,
-            text='ℹ️  Información del Sistema',
-            font=get_font('heading', 16, 'bold'),
-            text_color=get_color('Sea Blue')
-        )
-        info_title.pack(pady=(20, 10), padx=20, anchor='w')
+        # Chart 1: Usuarios por Unidad de Negocio (Barras Horizontales)
+        chart1 = self._create_chart_barh(charts_container)
+        chart1.grid(row=0, column=0, padx=(0, 10), sticky='nsew')
 
-        info_text = ctk.CTkLabel(
-            info_card,
-            text=(
-                "Sistema de Gestión de Capacitaciones del Instituto Hutchison Ports.\n\n"
-                "Este dashboard muestra métricas en tiempo real del progreso de capacitación "
-                "de todos los usuarios registrados en el sistema.\n\n"
-                f"Estado de Conexión BD: {'✓ Conectado' if self.db else '✗ Desconectado'}"
-            ),
-            font=get_font('body', 12),
-            text_color=get_color('Dark Gray'),
-            justify='left',
-            wraplength=900
-        )
-        info_text.pack(pady=(0, 20), padx=20, anchor='w')
+        # Chart 2: Distribución Porcentual (Donut)
+        chart2 = self._create_chart_donut(charts_container)
+        chart2.grid(row=0, column=1, padx=(10, 0), sticky='nsew')
 
-    def _create_metric_card(self, parent, title, value, color_name, row, col):
-        """Crear card de métrica individual"""
+    def _create_metric_card_with_icon(self, parent, icon, title, value, color_name, row, col):
+        """Crear card de métrica con icono según diseño de captura"""
         color = get_color(color_name)
 
         card = ctk.CTkFrame(
             parent,
-            fg_color=get_color('Surface'),
+            fg_color='white',
             border_width=2,
-            border_color=color,
-            corner_radius=10
+            border_color=get_color('Border'),
+            corner_radius=12,
+            height=160
         )
         card.grid(row=row, column=col, padx=10, pady=10, sticky='nsew')
+        card.grid_propagate(False)
+
+        # Container interior
+        inner = ctk.CTkFrame(card, fg_color='transparent')
+        inner.pack(fill='both', expand=True, padx=20, pady=20)
+
+        # Icono grande
+        icon_label = ctk.CTkLabel(
+            inner,
+            text=icon,
+            font=('Arial', 40),
+            text_color=color
+        )
+        icon_label.pack(pady=(10, 5))
 
         # Título
         title_label = ctk.CTkLabel(
-            card,
+            inner,
             text=title,
-            font=get_font('body', 12),
+            font=('Arial', 11),
             text_color=get_color('Medium Gray')
         )
-        title_label.pack(pady=(20, 5))
+        title_label.pack(pady=(0, 5))
 
-        # Valor
+        # Valor grande
         value_label = ctk.CTkLabel(
-            card,
+            inner,
             text=value,
-            font=get_font('title', 32, 'bold'),
-            text_color=color
+            font=('Montserrat', 28, 'bold'),
+            text_color=get_color('Sea Blue')
         )
-        value_label.pack(pady=(0, 20))
+        value_label.pack(pady=(0, 10))
+
+    def _create_chart_barh(self, parent):
+        """Crear gráfico de barras horizontales: Usuarios por Unidad"""
+        chart_frame = ctk.CTkFrame(
+            parent,
+            fg_color='white',
+            border_width=1,
+            border_color=get_color('Border'),
+            corner_radius=12
+        )
+
+        # Título del chart
+        title = ctk.CTkLabel(
+            chart_frame,
+            text='📊  Usuarios por Unidad de Negocio',
+            font=('Montserrat', 14, 'bold'),
+            text_color=get_color('Sea Blue'),
+            anchor='w'
+        )
+        title.pack(pady=(20, 15), padx=20, anchor='w')
+
+        # Obtener datos
+        if self.cursor:
+            try:
+                self.cursor.execute("""
+                    SELECT
+                        un.NombreUnidad,
+                        COUNT(u.UserId) as TotalUsuarios
+                    FROM Instituto_UnidadDeNegocio un
+                    LEFT JOIN Instituto_Usuario u ON un.IdUnidad = u.IdUnidadDeNegocio
+                    GROUP BY un.NombreUnidad
+                    ORDER BY TotalUsuarios DESC
+                """)
+                data = self.cursor.fetchall()
+                units = [row[0] for row in data]
+                counts = [row[1] for row in data]
+            except:
+                units = ['CCI', 'SANCHEZ', 'DENNIS', 'HPMX']
+                counts = [450, 380, 320, 375]
+        else:
+            units = ['CCI', 'SANCHEZ', 'DENNIS', 'HPMX']
+            counts = [450, 380, 320, 375]
+
+        # Crear canvas para barras simples
+        canvas_container = ctk.CTkFrame(chart_frame, fg_color='transparent')
+        canvas_container.pack(fill='both', expand=True, padx=20, pady=(0, 20))
+
+        # Barras horizontales simples con CTk
+        max_count = max(counts) if counts else 1
+        colors = [
+            get_color('Sky Blue'),
+            get_color('Success Green'),
+            get_color('Warning Orange'),
+            get_color('Aqua Green')
+        ]
+
+        for idx, (unit, count) in enumerate(zip(units, counts)):
+            # Frame para cada barra
+            bar_frame = ctk.CTkFrame(canvas_container, fg_color='transparent')
+            bar_frame.pack(fill='x', pady=8)
+
+            # Label de unidad
+            unit_label = ctk.CTkLabel(
+                bar_frame,
+                text=unit,
+                font=('Arial', 11),
+                text_color=get_color('Sea Blue'),
+                width=100,
+                anchor='w'
+            )
+            unit_label.pack(side='left', padx=(0, 10))
+
+            # Barra de progreso
+            bar_width = int((count / max_count) * 400) if max_count > 0 else 0
+            color = colors[idx % len(colors)]
+
+            bar = ctk.CTkFrame(
+                bar_frame,
+                fg_color=color,
+                width=bar_width,
+                height=30,
+                corner_radius=6
+            )
+            bar.pack(side='left', padx=(0, 10))
+            bar.pack_propagate(False)
+
+            # Valor dentro de la barra
+            value_label = ctk.CTkLabel(
+                bar,
+                text=str(count),
+                font=('Montserrat', 11, 'bold'),
+                text_color='white'
+            )
+            value_label.place(relx=0.5, rely=0.5, anchor='center')
+
+        return chart_frame
+
+    def _create_chart_donut(self, parent):
+        """Crear gráfico tipo donut: Distribución Porcentual"""
+        chart_frame = ctk.CTkFrame(
+            parent,
+            fg_color='white',
+            border_width=1,
+            border_color=get_color('Border'),
+            corner_radius=12
+        )
+
+        # Título del chart
+        title = ctk.CTkLabel(
+            chart_frame,
+            text='📈  Distribución Porcentual',
+            font=('Montserrat', 14, 'bold'),
+            text_color=get_color('Sea Blue'),
+            anchor='w'
+        )
+        title.pack(pady=(20, 15), padx=20, anchor='w')
+
+        # Obtener datos de progreso
+        if self.cursor:
+            try:
+                self.cursor.execute("""
+                    SELECT
+                        EstatusModuloUsuario,
+                        COUNT(*) as Total
+                    FROM Instituto_ProgresoModulo
+                    GROUP BY EstatusModuloUsuario
+                """)
+                data = self.cursor.fetchall()
+                statuses = [row[0] for row in data]
+                counts = [row[1] for row in data]
+            except:
+                statuses = ['Completado', 'En Progreso', 'Registrado']
+                counts = [450, 320, 155]
+        else:
+            statuses = ['Completado', 'En Progreso', 'Registrado']
+            counts = [450, 320, 155]
+
+        # Calcular porcentajes
+        total = sum(counts) if counts else 1
+        percentages = [(c / total) * 100 for c in counts]
+
+        # Container para el gráfico
+        canvas_container = ctk.CTkFrame(chart_frame, fg_color='transparent')
+        canvas_container.pack(fill='both', expand=True, padx=20, pady=(0, 20))
+
+        # Simular donut con barras de progreso circulares (versión simplificada)
+        colors = [
+            get_color('Success Green'),
+            get_color('Sky Blue'),
+            get_color('Warning Orange')
+        ]
+
+        # Leyenda con percentajes
+        legend_frame = ctk.CTkFrame(canvas_container, fg_color='transparent')
+        legend_frame.pack(expand=True)
+
+        for idx, (status, percentage, count) in enumerate(zip(statuses, percentages, counts)):
+            item_frame = ctk.CTkFrame(legend_frame, fg_color='transparent')
+            item_frame.pack(pady=10, anchor='w')
+
+            # Color indicator
+            color_box = ctk.CTkFrame(
+                item_frame,
+                fg_color=colors[idx % len(colors)],
+                width=20,
+                height=20,
+                corner_radius=4
+            )
+            color_box.pack(side='left', padx=(20, 10))
+            color_box.pack_propagate(False)
+
+            # Label con status
+            status_label = ctk.CTkLabel(
+                item_frame,
+                text=status,
+                font=('Arial', 11),
+                text_color=get_color('Sea Blue'),
+                width=120,
+                anchor='w'
+            )
+            status_label.pack(side='left', padx=(0, 10))
+
+            # Porcentaje
+            percent_label = ctk.CTkLabel(
+                item_frame,
+                text=f'{percentage:.1f}%',
+                font=('Montserrat', 13, 'bold'),
+                text_color=colors[idx % len(colors)],
+                width=80,
+                anchor='e'
+            )
+            percent_label.pack(side='left', padx=(0, 10))
+
+            # Count
+            count_label = ctk.CTkLabel(
+                item_frame,
+                text=f'({count})',
+                font=('Arial', 10),
+                text_color=get_color('Medium Gray')
+            )
+            count_label.pack(side='left')
+
+        return chart_frame
 
     def _create_module_progress_tab(self):
         """Tab Progreso por Módulo"""
