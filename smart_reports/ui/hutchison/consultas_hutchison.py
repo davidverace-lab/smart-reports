@@ -464,7 +464,6 @@ class ConsultasHutchison(ctk.CTkFrame):
 
                 # Bordes grises visibles (#d0d0d0)
                 outline_color='#d0d0d0',
-                outline_thickness=1,
 
                 # Selección con Sky Blue
                 table_selected_cells_bg=get_color('Sky Blue'),
@@ -472,11 +471,7 @@ class ConsultasHutchison(ctk.CTkFrame):
 
                 # Dimensiones
                 height=400,
-                width=1200,
-
-                # Altura de filas (32px según especificación)
-                default_row_height=32,
-                default_header_height=35
+                width=1200
             )
 
             # Habilitar funcionalidades
