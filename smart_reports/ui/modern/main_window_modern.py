@@ -129,7 +129,7 @@ class MainWindowModern(ctk.CTkFrame):
 
         # Usar la nueva sidebar corporativa oscura
         self.sidebar = SidebarModern(self, self.switch_panel)
-        self.sidebar.grid(row=1, column=0, sticky='nsew')
+        self.sidebar.grid(row=1, column=0, sticky='ns')  # CRÍTICO: solo 'ns' no 'nsew'
 
     def switch_panel(self, panel_id):
         """

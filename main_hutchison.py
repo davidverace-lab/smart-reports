@@ -107,6 +107,10 @@ class ApplicationHutchison:
         self.current_user = username
         print(f"✓ Login exitoso: {username}")
 
+        # CRÍTICO: Destruir el login antes de crear la ventana principal
+        if hasattr(self, 'login_window') and self.login_window:
+            self.login_window.destroy()
+
         # Crear y mostrar ventana principal
         self.main_window = MainWindowHutchison(self.root, username)
 

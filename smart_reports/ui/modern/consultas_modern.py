@@ -246,7 +246,7 @@ class ConsultasModern(ctk.CTkFrame):
                         'Total Módulos', 'Completados', 'En Progreso', 'Registrados'],
 
                 # ═══ ESTILO MODERN DARK ═══
-                # Header: Sky Blue (#009BDE) - 40px height
+                # Header: Sky Blue (#009BDE)
                 header_bg='#009BDE',
                 header_fg='white',
                 header_font=('Arial', 11, 'bold'),
@@ -262,7 +262,6 @@ class ConsultasModern(ctk.CTkFrame):
 
                 # Bordes sutiles (#4a4d6c)
                 outline_color='#4a4d6c',
-                outline_thickness=1,
 
                 # Selección con Sky Blue
                 table_selected_cells_bg='#009BDE',
@@ -270,11 +269,7 @@ class ConsultasModern(ctk.CTkFrame):
 
                 # Dimensiones
                 height=400,
-                width=1200,
-
-                # Altura de filas
-                default_row_height=34,
-                default_header_height=40
+                width=1200
             )
 
             # Habilitar funcionalidades
