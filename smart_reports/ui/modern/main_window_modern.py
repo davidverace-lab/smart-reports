@@ -1,6 +1,6 @@
 """
 Main Window Modern - Ventana Principal con Diseño Oscuro
-Layout: Header + Sidebar + Content Area (diseño oscuro)
+Layout: Header + Sidebar Corporativa + Content Area (diseño oscuro)
 """
 
 import customtkinter as ctk
@@ -14,6 +14,7 @@ from smart_reports.config.settings_modern import (
     get_font_modern
 )
 from smart_reports.database.connection import DatabaseConnection
+from smart_reports.ui.modern.sidebar_modern import SidebarModern
 
 
 class MainWindowModern(ctk.CTkFrame):
@@ -124,76 +125,27 @@ class MainWindowModern(ctk.CTkFrame):
         title_label.pack(side='right')
 
     def _create_sidebar(self):
-        """Crear sidebar con navegación"""
+        """Crear sidebar corporativa con navegación"""
 
-        self.sidebar = ctk.CTkFrame(
-            self,
-            fg_color=get_color_modern('surface'),
-            width=SIDEBAR_CONFIG_MODERN['width'],
-            corner_radius=0
-        )
-        self.sidebar.grid(row=1, column=0, sticky='ns')
-        self.sidebar.grid_propagate(False)
+        # Usar la nueva sidebar corporativa oscura
+        self.sidebar = SidebarModern(self, self.switch_panel)
+        self.sidebar.grid(row=1, column=0, sticky='nsew')
 
-        # Borde derecho
-        border = ctk.CTkFrame(
-            self.sidebar,
-            fg_color=get_color_modern('border'),
-            width=1
-        )
-        border.pack(side='right', fill='y')
+    def switch_panel(self, panel_id):
+        """
+        Cambiar entre paneles según el ID
 
-        # Botones de navegación
-        self.nav_buttons = {}
-
-        nav_items = [
-            ('📊', 'Dashboard', self.show_dashboard),
-            ('🔍', 'Consultas', self.show_consultas),
-            ('🔄', 'Cruce de Datos', self.show_cruce_datos),
-            ('⚙️', 'Configuración', self.show_configuracion),
-        ]
-
-        for icon, text, command in nav_items:
-            self._create_nav_button(icon, text, command)
-
-    def _create_nav_button(self, icon, text, command):
-        """Crear botón de navegación"""
-
-        btn = ctk.CTkButton(
-            self.sidebar,
-            text=f'{icon}  {text}',
-            font=SIDEBAR_CONFIG_MODERN['button_font'],
-            fg_color=SIDEBAR_CONFIG_MODERN['button_fg_color'],
-            hover_color=SIDEBAR_CONFIG_MODERN['button_hover_color'],
-            text_color=SIDEBAR_CONFIG_MODERN['button_text_color'],
-            height=SIDEBAR_CONFIG_MODERN['button_height'],
-            anchor='w',
-            corner_radius=0,
-            command=lambda: self._on_nav_click(text, command)
-        )
-        btn.pack(fill='x', padx=0, pady=1)
-        self.nav_buttons[text] = btn
-
-    def _on_nav_click(self, button_name, command):
-        """Manejar clic en navegación"""
-
-        # Resetear todos los botones
-        for name, btn in self.nav_buttons.items():
-            if name == button_name:
-                # Botón activo (Sky Blue corporativo)
-                btn.configure(
-                    fg_color=SIDEBAR_CONFIG_MODERN['button_active_fg_color'],
-                    text_color=SIDEBAR_CONFIG_MODERN['button_active_text_color']
-                )
-            else:
-                # Botón inactivo
-                btn.configure(
-                    fg_color=SIDEBAR_CONFIG_MODERN['button_fg_color'],
-                    text_color=SIDEBAR_CONFIG_MODERN['button_text_color']
-                )
-
-        # Ejecutar comando
-        command()
+        Args:
+            panel_id: Identificador del panel ('dashboard', 'consultas', 'actualizar', 'configuracion')
+        """
+        if panel_id == 'dashboard':
+            self.show_dashboard()
+        elif panel_id == 'consultas':
+            self.show_consultas()
+        elif panel_id == 'actualizar':
+            self.show_cruce_datos()
+        elif panel_id == 'configuracion':
+            self.show_configuracion()
 
     def _clear_content(self):
         """Limpiar área de contenido"""
