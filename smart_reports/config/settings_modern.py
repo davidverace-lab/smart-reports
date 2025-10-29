@@ -13,8 +13,12 @@ PRIMARY_COLORS_MODERN = {
     'surface': '#2b2d42',
     'surface_light': '#3a3d5c',
     'surface_hover': '#4a4d6c',
+    'surface_card': '#363a52',
+    'surface_dark': '#1a1d2e',
 
     # Acentos corporativos Hutchison
+    'Sky Blue': '#009BDE',         # Corporativo (alias)
+    'Sea Blue': '#002E6D',         # Corporativo (alias)
     'accent_primary': '#009BDE',    # Sky Blue (botones principales)
     'accent_secondary': '#002E6D',  # Sea Blue (hover)
     'accent_green': '#28A745',      # Success
@@ -22,6 +26,7 @@ PRIMARY_COLORS_MODERN = {
     'accent_red': '#DC3545',        # Error
     'accent_yellow': '#FFC627',     # Sunray Yellow
     'accent_aqua': '#54BBAB',       # Aqua Green
+    'accent_purple': '#6c63ff',     # Purple
 
     # Textos
     'text_primary': '#ffffff',
